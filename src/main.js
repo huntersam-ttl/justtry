@@ -9,7 +9,9 @@ const state = {
   applications: [],
   collaborations: [],
   series: [],
-  session: null
+  session: null,
+  adminProfile: null,
+  adminErrors: []
 };
 
 const pages = [
@@ -57,6 +59,9 @@ async function loadAdminData() {
     supabase.from("series").select("*").order("created_at", { ascending: false })
   ]);
 
+  state.adminErrors = [contentRes, eventsRes, appsRes, collabRes, seriesRes]
+    .filter((result) => result.error)
+    .map((result) => result.error.message);
   state.content = contentRes.data || state.content;
   state.events = eventsRes.data || state.events;
   state.applications = appsRes.data || [];
@@ -277,6 +282,23 @@ async function adminPage() {
   state.session = data.session;
   if (!state.session) return shell(loginView());
 
+  const { data: profile, error: profileError } = await supabase
+    .from("admin_profiles")
+    .select("role")
+    .eq("user_id", state.session.user.id)
+    .maybeSingle();
+  state.adminProfile = profile;
+  if (profileError || profile?.role !== "admin") {
+    return shell(`
+      <section class="page-hero compact">
+        <p class="eyebrow">Admin</p>
+        <h1>Signed in, but not authorised.</h1>
+        <p>${profileError ? profileError.message : "This account is not listed as a Just Try Media admin."}</p>
+        <button class="button secondary" data-logout>Logout</button>
+      </section>
+    `);
+  }
+
   await loadAdminData();
   return shell(dashboardView());
 }
@@ -292,6 +314,8 @@ function loginView() {
         <label>Email<input name="email" type="email" required></label>
         <label>Password<input name="password" type="password" required></label>
         <button class="button primary" type="submit">Login</button>
+        <button class="button secondary" type="button" data-magic-link>Send Magic Link</button>
+        <button class="button ghost" type="button" data-reset-password>Reset Password</button>
         <p class="form-status"></p>
       </form>
     </section>
@@ -313,6 +337,15 @@ function dashboardView() {
       <article><span>${state.applications.length + state.collaborations.length}</span><p>Requests</p></article>
     </section>
     <section class="admin-grid">
+      ${state.adminErrors.length ? `<div class="admin-panel wide"><h2>Admin Data Warning</h2><p class="empty">${state.adminErrors.join(" ")}</p></div>` : ""}
+      <div class="admin-panel wide">
+        <h2>Account Access</h2>
+        <form class="mini-form" id="password-update-form">
+          <input name="password" type="password" minlength="8" placeholder="New Password">
+          <button class="button secondary" type="submit">Update Password</button>
+          <p class="form-status"></p>
+        </form>
+      </div>
       ${contentManager()}
       ${eventManager()}
       ${seriesManager()}
@@ -433,10 +466,59 @@ async function uploadMediaFile(file, folder) {
 
 async function handleLogin(event) {
   event.preventDefault();
-  const data = Object.fromEntries(new FormData(event.currentTarget));
+  const form = event.currentTarget;
+  const status = form.querySelector(".form-status");
+  const data = Object.fromEntries(new FormData(form));
+  status.textContent = "Checking login...";
   const { error } = await supabase.auth.signInWithPassword(data);
-  event.currentTarget.querySelector(".form-status").textContent = error ? error.message : "Logged in.";
+  status.textContent = error ? error.message : "Logged in.";
   if (!error) render();
+}
+
+async function handleMagicLink(button) {
+  const form = button.closest("form");
+  const status = form.querySelector(".form-status");
+  const email = new FormData(form).get("email");
+  if (!email) {
+    status.textContent = "Enter your admin email first.";
+    return;
+  }
+  status.textContent = "Sending magic link...";
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: `${window.location.origin}/admin` }
+  });
+  status.textContent = error ? error.message : "Magic link sent. Check your email, then open the link.";
+}
+
+async function handlePasswordReset(button) {
+  const form = button.closest("form");
+  const status = form.querySelector(".form-status");
+  const email = new FormData(form).get("email");
+  if (!email) {
+    status.textContent = "Enter your admin email first.";
+    return;
+  }
+  status.textContent = "Sending password reset...";
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/admin`
+  });
+  status.textContent = error ? error.message : "Password reset email sent.";
+}
+
+async function handlePasswordUpdate(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const status = form.querySelector(".form-status");
+  const password = new FormData(form).get("password");
+  if (!password || password.length < 8) {
+    status.textContent = "Password must be at least 8 characters.";
+    return;
+  }
+  status.textContent = "Updating password...";
+  const { error } = await supabase.auth.updateUser({ password });
+  status.textContent = error ? error.message : "Password updated.";
+  if (!error) form.reset();
 }
 
 async function toggleStatus(button) {
@@ -469,6 +551,9 @@ function bind() {
   document.querySelector("[data-menu]")?.addEventListener("click", () => document.querySelector(".nav")?.classList.toggle("open"));
   document.querySelectorAll("#join-form, #collab-form").forEach((form) => form.addEventListener("submit", submitForm));
   document.querySelector("#login-form")?.addEventListener("submit", handleLogin);
+  document.querySelector("[data-magic-link]")?.addEventListener("click", (event) => handleMagicLink(event.currentTarget));
+  document.querySelector("[data-reset-password]")?.addEventListener("click", (event) => handlePasswordReset(event.currentTarget));
+  document.querySelector("#password-update-form")?.addEventListener("submit", handlePasswordUpdate);
   document.querySelectorAll("#content-form, #event-form, #series-form").forEach((form) => form.addEventListener("submit", handleAdminSubmit));
   document.querySelector("[data-logout]")?.addEventListener("click", async () => {
     await supabase.auth.signOut();
