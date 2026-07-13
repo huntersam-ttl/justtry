@@ -24,6 +24,42 @@ const publicPages = [
   ["Work With Us", "/join"]
 ];
 
+const siteUrl = "https://www.justtryhub.com";
+const defaultSeo = {
+  title: "Just Try Media — Documentaries, Shows, Events & Creator Stories",
+  description: "Just Try Media is a student-led media hub creating documentaries, shows, event films, creator stories, founder stories, student stories, and culture content for people building from zero.",
+  image: `${siteUrl}/og-image.svg`
+};
+
+const seoPages = {
+  "/": defaultSeo,
+  "/stories": {
+    title: "Stories — Just Try Media",
+    description: "Creator stories, founder stories, student stories, blogs, features, and culture content from Just Try Media."
+  },
+  "/shows": {
+    title: "Shows — Just Try Media",
+    description: "Original Just Try Media shows, documentary formats, conversations, challenges, diaries, and recurring series."
+  },
+  "/events": {
+    title: "Events — Just Try Media",
+    description: "Event films, reels, interviews, aftermovies, and coverage services for launches, cultural nights, festivals, and community events."
+  },
+  "/about": {
+    title: "About — Just Try Media",
+    description: "Learn about Just Try Media, a student-led media hub documenting real stories from people, creators, students, founders, and communities building from zero."
+  },
+  "/join": {
+    title: "Join & Collaborate — Just Try Media",
+    description: "Apply to join Just Try Media or collaborate on documentaries, creator stories, founder stories, event films, shows, and culture content."
+  },
+  "/admin": {
+    title: "Admin — Just Try Media",
+    description: "Private Just Try Media admin dashboard.",
+    robots: "noindex, nofollow"
+  }
+};
+
 function route() {
   return window.location.pathname.replace(/\/$/, "") || "/";
 }
@@ -32,6 +68,49 @@ function go(path) {
   history.pushState({}, "", path);
   render();
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function setMeta(selector, attr, value) {
+  let element = document.head.querySelector(selector);
+  if (!element) {
+    element = document.createElement("meta");
+    const match = selector.match(/\[(name|property)="([^"]+)"\]/);
+    if (match) element.setAttribute(match[1], match[2]);
+    document.head.appendChild(element);
+  }
+  element.setAttribute(attr, value);
+}
+
+function setCanonical(url) {
+  let link = document.head.querySelector('link[rel="canonical"]');
+  if (!link) {
+    link = document.createElement("link");
+    link.setAttribute("rel", "canonical");
+    document.head.appendChild(link);
+  }
+  link.setAttribute("href", url);
+}
+
+function updateSeo() {
+  const current = route();
+  const seo = { ...defaultSeo, ...(seoPages[current] || {}) };
+  const canonicalPath = current === "/admin" ? "/admin" : current;
+  const canonicalUrl = `${siteUrl}${canonicalPath === "/" ? "/" : canonicalPath}`;
+  const robots = seo.robots || "index, follow";
+
+  document.title = seo.title;
+  setMeta('meta[name="description"]', "content", seo.description);
+  setMeta('meta[name="robots"]', "content", robots);
+  setCanonical(canonicalUrl);
+  setMeta('meta[property="og:title"]', "content", seo.title);
+  setMeta('meta[property="og:description"]', "content", seo.description);
+  setMeta('meta[property="og:type"]', "content", "website");
+  setMeta('meta[property="og:url"]', "content", canonicalUrl);
+  setMeta('meta[property="og:image"]', "content", seo.image || defaultSeo.image);
+  setMeta('meta[name="twitter:card"]', "content", "summary_large_image");
+  setMeta('meta[name="twitter:title"]', "content", seo.title);
+  setMeta('meta[name="twitter:description"]', "content", seo.description);
+  setMeta('meta[name="twitter:image"]', "content", seo.image || defaultSeo.image);
 }
 
 async function loadPublicData() {
@@ -740,6 +819,7 @@ async function toggleStatus(button) {
 async function render() {
   await loadPublicData();
   const current = route();
+  updateSeo();
   let view = homePage();
   if (current === "/stories") view = listingPage(["blog", "feature", "short", "Creator Stories", "Founder Stories", "Culture"]);
   if (current === "/shows") view = listingPage(["show", "documentary"]);
