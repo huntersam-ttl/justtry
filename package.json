@@ -4,7 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
     "preview": "vite --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.48.1"
   },
   "devDependencies": {
     "vite": "^7.0.0"
