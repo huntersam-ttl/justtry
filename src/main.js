@@ -1,6 +1,6 @@
 import "./styles.css";
 import { supabase, supabaseReady, storageUrl } from "./supabase.js";
-import { createTypes, fallbackEvents, fallbackFeatured, originalSeries } from "./data.js";
+import { audienceBlocks, collaborationPaths, createTypes, eventServices, fallbackEvents, fallbackFeatured, originalSeries } from "./data.js";
 
 const app = document.querySelector("#app");
 const state = {
@@ -14,14 +14,13 @@ const state = {
   adminErrors: []
 };
 
-const pages = [
+const publicPages = [
   ["Home", "/"],
   ["Stories", "/stories"],
   ["Shows", "/shows"],
   ["Events", "/events"],
   ["About", "/about"],
-  ["Join / Collaborate", "/join"],
-  ["Admin", "/admin"]
+  ["Work With Us", "/join"]
 ];
 
 function route() {
@@ -76,20 +75,27 @@ function shell(inner) {
         <span class="brand-mark">JT</span>
         <span><strong>Just Try</strong><small>Media Hub</small></span>
       </a>
-      <nav class="nav">${pages.map(([label, path]) => `<a data-link class="${route() === path ? "active" : ""}" href="${path}">${label}</a>`).join("")}</nav>
+      <nav class="nav">${publicPages.map(([label, path]) => `<a data-link class="${route() === path ? "active" : ""}" href="${path}">${label}</a>`).join("")}</nav>
       <button class="menu-button" data-menu>Menu</button>
     </header>
     <main>${inner}</main>
     <footer class="footer">
       <div>
         <p class="eyebrow">Just Try Media</p>
-        <h2>Stories for people still building.</h2>
+        <h2>For the ones still trying.</h2>
+        <p>A student-led media studio making documentaries, shows, and event films about people building from zero.</p>
       </div>
       <div class="footer-links">
         <a data-link href="/stories">Stories</a>
         <a data-link href="/shows">Shows</a>
         <a data-link href="/events">Events</a>
         <a data-link href="/join">Work With Us</a>
+      </div>
+      <div class="footer-links">
+        <a href="https://www.instagram.com/" target="_blank" rel="noreferrer">Instagram</a>
+        <a href="https://www.tiktok.com/" target="_blank" rel="noreferrer">TikTok</a>
+        <a href="https://www.youtube.com/" target="_blank" rel="noreferrer">YouTube</a>
+        <a href="mailto:hello@justtryhub.com">Email</a>
       </div>
     </footer>
   `;
@@ -140,41 +146,58 @@ function homePage() {
       <div class="hero-copy">
         <p class="eyebrow">Documentaries · Shows · Events · Stories</p>
         <h1>For the ones still trying.</h1>
-        <p>A media hub for documentaries, shows, events, stories, and people building from zero.</p>
+        <p>A student-led media studio making documentaries, shows, event films, and creator stories about people building from zero.</p>
         <div class="actions">
           <a data-link class="button primary" href="/stories">Explore Stories</a>
           <a data-link class="button secondary" href="/join">Work With Us</a>
         </div>
       </div>
-      <div class="hero-panel">
-        <span>Now building</span>
-        <strong>Original stories, live formats, founder films, creator culture.</strong>
+      <div class="hero-montage" aria-label="Just Try Media formats">
+        <article><span>01</span><strong>Documentaries</strong><small>founders, students, creators</small></article>
+        <article><span>02</span><strong>Event films</strong><small>after movies, reels, interviews</small></article>
+        <article><span>03</span><strong>Original shows</strong><small>culture, business, entertainment</small></article>
+        <article><span>04</span><strong>Creator stories</strong><small>artists, makers, performers</small></article>
       </div>
     </section>
 
-    ${sectionHeader("Featured Content", "Fresh films, stories, and formats from the hub.")}
+    ${sectionHeader("What We Create", "Documentaries, event films, original shows, and creator-led culture content.")}
+    <section class="create-grid">${createTypes.map((type) => `<article><span>${type.code}</span><h3>${type.title}</h3><p>${type.description}</p></article>`).join("")}</section>
+
+    ${sectionHeader("Original Series", "Poster-style formats built to grow into the Just Try slate.")}
+    <section class="series-grid">${series.map(seriesCard).join("")}</section>
+
+    <section class="light-section">
+      ${sectionHeader("Who This Is For", "For students, creators, founders, small brands, and event organisers who want their story on camera.")}
+      <div class="audience-grid">${audienceBlocks.map((block) => `<article><h3>${block.title}</h3><p>${block.description}</p></article>`).join("")}</div>
+    </section>
+
+    ${sectionHeader("Featured Stories", "Published stories and films from the Just Try Media hub.")}
     <section class="grid three">${cards.map(contentCard).join("")}</section>
 
-    ${sectionHeader("What We Create", "Flexible formats for culture, creators, events, and businesses with something real to say.")}
-    <section class="create-grid">${createTypes.map((type) => `<article><span>${type.split(" ").map((w) => w[0]).join("").slice(0, 2)}</span><h3>${type}</h3><p>Premium storytelling built for digital audiences, communities, and moments that deserve a proper record.</p></article>`).join("")}</section>
+    <section class="event-services">
+      <div>
+        <p class="eyebrow">Events / Work With Us</p>
+        <h2>Event coverage that makes people wish they were there.</h2>
+        <p>From promo reels to interviews and aftermovies, we turn live moments into media people keep sharing.</p>
+        <a data-link class="button primary" href="/join">Book Event Coverage</a>
+      </div>
+      <div class="service-grid">${eventServices.map((service) => `<article>${service}</article>`).join("")}</div>
+    </section>
 
-    ${sectionHeader("Original Series", "Recurring formats designed to grow into a recognisable Just Try slate.")}
-    <section class="series-grid">${series.map((item) => `<article><p class="eyebrow">Original Series</p><h3>${item.title}</h3><p>${item.description || item.excerpt || "A Just Try original format in development."}</p></article>`).join("")}</section>
-
-    ${sectionHeader("Events", "Upcoming moments plus event coverage for organisers who want the story to last.")}
+    ${sectionHeader("Upcoming / Coverage", "Live formats, event services, and the next Just Try moments.")}
     <section class="stack">${events.map(eventCard).join("")}</section>
 
     <section class="split-band">
       <div>
-        <p class="eyebrow">Join the Hub</p>
-        <h2>Hosts, editors, videographers, designers, writers, marketers, outreach people.</h2>
-        <p>Just Try is building a creative network around real stories and practical ambition.</p>
+        <p class="eyebrow">Work With Us</p>
+        <h2>Join the media team, tell your story, or book coverage.</h2>
+        <p>Hosts, editors, videographers, designers, writers, marketers, creators, founders, and event organisers all have a place here.</p>
         <a data-link class="button primary" href="/join">Apply to Join</a>
       </div>
       <div>
-        <p class="eyebrow">Collaborate</p>
-        <h2>Creators, artists, event organisers, brands, small businesses, and founders.</h2>
-        <p>Bring a story, launch, event, person, product, or messy early idea. We shape it into media.</p>
+        <p class="eyebrow">Start Here</p>
+        <h2>${collaborationPaths.join(". ")}.</h2>
+        <p>Bring a launch, event, person, project, business, or early idea. We shape it into watchable media.</p>
         <a data-link class="button secondary" href="/join#collaborate">Start a Collaboration</a>
       </div>
     </section>
@@ -183,6 +206,24 @@ function homePage() {
 
 function sectionHeader(title, text) {
   return `<div class="section-heading"><p class="eyebrow">${title}</p><h2>${text}</h2></div>`;
+}
+
+function seriesCard(item, index) {
+  const status = item.status || "Coming Soon";
+  return `
+    <article class="series-card">
+      <div class="series-poster tone-${(index % 6) + 1}">
+        <span>${String(index + 1).padStart(2, "0")}</span>
+        <strong>${item.title}</strong>
+      </div>
+      <div>
+        <p class="eyebrow">${item.category || "Original Series"}</p>
+        <h3>${item.title}</h3>
+        <p>${item.description || item.excerpt || "A Just Try original format in development."}</p>
+        <span class="status-badge">${status}</span>
+      </div>
+    </article>
+  `;
 }
 
 function listingPage(kind) {
@@ -227,9 +268,9 @@ function aboutPage() {
 function joinPage() {
   return shell(`
     <section class="page-hero compact">
-      <p class="eyebrow">Join / Collaborate</p>
-      <h1>Build the hub with us.</h1>
-      <p>Apply to join the creative team or send a collaboration request for a story, event, creator, artist, brand, or founder project.</p>
+      <p class="eyebrow">Work With Us</p>
+      <h1>Join the team, tell your story, or book event coverage.</h1>
+      <p>Apply to join the media team or send a collaboration request for a story, event, creator, artist, brand, or founder project.</p>
     </section>
     <section class="form-grid">
       ${formShell("join-form", "Join the Hub", ["name", "email", "role", "location", "portfolio_url", "message"])}
