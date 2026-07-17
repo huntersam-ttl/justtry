@@ -64,18 +64,20 @@ function route() {
   return window.location.pathname.replace(/\/$/, "") || "/";
 }
 
-function go(path) {
+async function go(path) {
   history.pushState({}, "", path);
-  render();
-  const hash = path.includes("#") ? path.split("#")[1] : "";
-  if (hash) {
-    requestAnimationFrame(() => {
-      const target = document.getElementById(hash) || document.querySelector(`[data-anchor="${hash}"]`);
-      target?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-    return;
-  }
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  await render();
+  if (!path.includes("#")) window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function scrollToAnchor(hash = window.location.hash) {
+  const targetName = hash.replace(/^#/, "");
+  if (!targetName) return false;
+  requestAnimationFrame(() => {
+    const target = document.getElementById(targetName) || document.querySelector(`[data-anchor="${targetName}"]`);
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  return true;
 }
 
 function setMeta(selector, attr, value) {
@@ -844,6 +846,7 @@ async function render() {
   if (current === "/admin") view = await adminPage();
   app.innerHTML = view;
   bind();
+  scrollToAnchor();
 }
 
 function bind() {
