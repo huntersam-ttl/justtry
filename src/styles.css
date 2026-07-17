@@ -72,18 +72,13 @@ select:focus-visible {
   color: var(--light-text);
 }
 
-.brand-mark {
-  display: grid;
+.brand-logo {
   width: 42px;
   height: 42px;
-  place-items: center;
-  border: 1px solid rgba(163, 230, 53, 0.64);
-  color: var(--hero-dark);
-  background:
-    linear-gradient(135deg, var(--accent), var(--accent-hover));
-  box-shadow: 0 0 30px rgba(163, 230, 53, 0.28);
-  font-family: "Space Grotesk", sans-serif;
-  font-weight: 800;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  object-fit: contain;
+  box-shadow: 0 0 28px rgba(163, 230, 53, 0.22);
 }
 
 .brand strong,
@@ -1184,6 +1179,22 @@ select {
 
 .footer p {
   max-width: 520px;
+}
+
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+  color: var(--light-text);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.footer-brand .brand-logo {
+  width: 48px;
+  height: 48px;
 }
 
 code {

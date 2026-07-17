@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Just Try logo</title>
+  <desc id="desc">A black circular badge with stacked white JUST TRY text and a neon lime dot.</desc>
+  <circle cx="256" cy="256" r="248" fill="#020617"/>
+  <circle cx="256" cy="256" r="247" fill="none" stroke="#111827" stroke-width="2"/>
+  <text x="256" y="235" text-anchor="middle" fill="#FFFFFF" font-family="Space Grotesk, Inter, Arial, sans-serif" font-size="106" font-weight="900" letter-spacing="-2">JUST</text>
+  <text x="225" y="342" text-anchor="middle" fill="#FFFFFF" font-family="Space Grotesk, Inter, Arial, sans-serif" font-size="106" font-weight="900" letter-spacing="-2">TRY</text>
+  <circle cx="363" cy="314" r="24" fill="#A3E635"/>
+</svg>

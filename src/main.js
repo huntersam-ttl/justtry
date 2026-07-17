@@ -27,7 +27,7 @@ const publicPages = [
 const siteUrl = "https://www.justtryhub.com";
 const defaultSeo = {
   title: "Just Try Media — Documentaries, Shows, Events & Creator Stories",
-  description: "Just Try Media is a student-led media hub creating documentaries, shows, event films, creator stories, founder stories, student stories, and culture content for people building from zero.",
+  description: "Just Try Media is an independent youth-led media hub creating documentaries, shows, event films, creator stories, founder journeys, and culture content for people building from zero.",
   image: `${siteUrl}/og-image.svg`
 };
 
@@ -35,7 +35,7 @@ const seoPages = {
   "/": defaultSeo,
   "/stories": {
     title: "Stories — Just Try Media",
-    description: "Creator stories, founder stories, student stories, blogs, features, and culture content from Just Try Media."
+    description: "Creator stories, founder journeys, Student Stories, blogs, features, and culture content from Just Try Media."
   },
   "/shows": {
     title: "Shows — Just Try Media",
@@ -47,11 +47,11 @@ const seoPages = {
   },
   "/about": {
     title: "About — Just Try Media",
-    description: "Learn about Just Try Media, a student-led media hub documenting real stories from people, creators, students, founders, and communities building from zero."
+    description: "Learn about Just Try Media, an independent youth-led media hub documenting real stories from creators, founders, artists, events, small brands, communities, and people building from zero."
   },
   "/join": {
     title: "Join & Collaborate — Just Try Media",
-    description: "Apply to join Just Try Media or collaborate on documentaries, creator stories, founder stories, event films, shows, and culture content."
+    description: "Apply to join Just Try Media or collaborate on documentaries, creator stories, founder journeys, event films, shows, and culture content."
   },
   "/admin": {
     title: "Admin — Just Try Media",
@@ -161,8 +161,8 @@ async function loadAdminData() {
 function shell(inner) {
   return `
     <header class="site-header">
-      <a class="brand" data-link href="/">
-        <span class="brand-mark">JT</span>
+      <a class="brand" data-link href="/" aria-label="Go to Just Try homepage">
+        <img class="brand-logo" src="/logo-justtry.svg" alt="Just Try logo" width="42" height="42">
         <span><strong>Just Try</strong><small>Media Hub</small></span>
       </a>
       <nav class="nav">${publicPages.map(([label, path]) => `<a data-link class="${route() === path ? "active" : ""}" href="${path}">${label}</a>`).join("")}</nav>
@@ -171,9 +171,13 @@ function shell(inner) {
     <main>${inner}</main>
     <footer class="footer">
       <div>
+        <a class="footer-brand" data-link href="/" aria-label="Go to Just Try homepage">
+          <img class="brand-logo" src="/logo-justtry.svg" alt="Just Try logo" width="48" height="48">
+          <span>Just Try</span>
+        </a>
         <p class="eyebrow">Just Try Media</p>
         <h2>For the ones still trying.</h2>
-        <p>A student-led media studio making documentaries, shows, and event films about people building from zero.</p>
+        <p>An independent youth-led media hub making documentaries, shows, and event films about people building from zero.</p>
       </div>
       <div class="footer-links">
         <a data-link href="/stories">Stories</a>
@@ -196,8 +200,8 @@ function adminShell(inner, compact = false) {
   return `
     <main class="admin-app ${compact ? "login-only" : ""}">
       <header class="admin-topbar">
-        <a class="admin-brand" href="/">
-          <span class="brand-mark">JT</span>
+        <a class="admin-brand" href="/" aria-label="Go to Just Try homepage">
+          <img class="brand-logo" src="/logo-justtry.svg" alt="Just Try logo" width="42" height="42">
           <span><strong>Just Try Admin</strong><small>${email || "Media CMS"}</small></span>
         </a>
         <div class="admin-top-actions">
@@ -255,14 +259,14 @@ function homePage() {
       <div class="hero-copy">
         <p class="eyebrow">Documentaries · Shows · Events · Stories</p>
         <h1>For the ones still trying.</h1>
-        <p>A student-led media studio making documentaries, shows, event films, and creator stories about people building from zero.</p>
+        <p>An independent youth media hub creating documentaries, shows, event films, and creator stories about people building from zero.</p>
         <div class="actions">
           <a data-link class="button primary" href="/stories">Explore Stories</a>
           <a data-link class="button secondary" href="/join">Work With Us</a>
         </div>
       </div>
       <div class="hero-montage" aria-label="Just Try Media formats">
-        <article><span>01</span><strong>Documentaries</strong><small>founders, students, creators</small></article>
+        <article><span>01</span><strong>Documentaries</strong><small>founders, artists, creators</small></article>
         <article><span>02</span><strong>Event films</strong><small>after movies, reels, interviews</small></article>
         <article><span>03</span><strong>Original shows</strong><small>culture, business, entertainment</small></article>
         <article><span>04</span><strong>Creator stories</strong><small>artists, makers, performers</small></article>
@@ -276,7 +280,7 @@ function homePage() {
     <section class="series-grid">${series.map(seriesCard).join("")}</section>
 
     <section class="light-section">
-      ${sectionHeader("Who This Is For", "For students, creators, founders, small brands, and event organisers who want their story on camera.")}
+      ${sectionHeader("Who This Is For", "For creators, founders, artists, small brands, event organisers, young builders, and communities with stories worth telling.")}
       <div class="audience-grid">${audienceBlocks.map((block) => `<article><h3>${block.title}</h3><p>${block.description}</p></article>`).join("")}</div>
     </section>
 
@@ -337,7 +341,7 @@ function seriesCard(item, index) {
 
 function listingPage(kind) {
   const titleMap = {
-    "/stories": ["Stories", "Creator stories, founder stories, blogs, features, and culture pieces."],
+    "/stories": ["Stories", "Creator stories, founder journeys, Student Stories, blogs, features, and culture pieces."],
     "/shows": ["Shows", "Original formats, conversations, challenges, diaries, and recurring series."],
     "/events": ["Events", "Upcoming events, event films, and coverage services."]
   };
