@@ -67,6 +67,14 @@ function route() {
 function go(path) {
   history.pushState({}, "", path);
   render();
+  const hash = path.includes("#") ? path.split("#")[1] : "";
+  if (hash) {
+    requestAnimationFrame(() => {
+      const target = document.getElementById(hash) || document.querySelector(`[data-anchor="${hash}"]`);
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return;
+  }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -373,14 +381,14 @@ function joinPage() {
     </section>
     <section class="form-grid">
       ${formShell("join-form", "Join the Hub", ["name", "email", "role", "location", "portfolio_url", "message"])}
-      ${formShell("collab-form", "Collaborate", ["name", "email", "project_type", "budget_range", "timeline", "message"])}
+      ${formShell("collab-form", "Collaborate", ["name", "email", "project_type", "budget_range", "timeline", "message"], "collaborate")}
     </section>
   `);
 }
 
-function formShell(id, title, fields) {
+function formShell(id, title, fields, anchorId = "") {
   return `
-    <form class="panel-form" id="${id}">
+    <form class="panel-form" id="${id}" ${anchorId ? `data-anchor="${anchorId}"` : ""}>
       <h2>${title}</h2>
       ${fields.map((field) => field === "message"
         ? `<label>${label(field)}<textarea name="${field}" rows="5" required></textarea></label>`
@@ -412,6 +420,8 @@ async function submitForm(event) {
   event.preventDefault();
   const form = event.currentTarget;
   const status = form.querySelector(".form-status");
+  const submitButton = form.querySelector("button[type='submit']");
+  if (form.dataset.submitting === "true") return;
   const data = Object.fromEntries(new FormData(form));
 
   if (!supabaseReady) {
@@ -419,10 +429,15 @@ async function submitForm(event) {
     return;
   }
 
+  form.dataset.submitting = "true";
+  submitButton.disabled = true;
+  status.textContent = "Submitting...";
   const table = form.id === "join-form" ? "team_applications" : "collaboration_requests";
   const { error } = await supabase.from(table).insert(data);
   status.textContent = error ? error.message : "Submitted. We will review it from the admin dashboard.";
   if (!error) form.reset();
+  submitButton.disabled = false;
+  delete form.dataset.submitting;
 }
 
 async function adminPage() {
